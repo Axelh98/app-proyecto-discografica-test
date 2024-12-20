@@ -8,99 +8,63 @@
 
     <!-- MENSAJES DE ESTADO DE PAGO -->
     @if (session('success'))
-    <div class="py-12">
-        <div id="success-message"
-            class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex justify-center items-center duration-300"
-            role="alert">
-            <strong class="font-bold">¡Éxito!</strong>
-            <span class="block sm:inline">{{ session('success') }}</span>
+        <div class="py-12">
+            <div id="success-message"
+                class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex justify-center items-center duration-300"
+                role="alert">
+                <strong class="font-bold">¡Éxito!</strong>
+                <span class="block sm:inline">{{ session('success') }}</span>
+            </div>
         </div>
-    </div>
     @endif
 
     @if (session('error'))
-    <div class="py-12">
-        <div id="error-message"
-            class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex justify-center items-center duration-200"
-            role="alert">
-            <strong class="font-bold">Error:</strong>
-            <span class="block sm:inline">{{ session('error') }}</span>
+        <div class="py-12">
+            <div id="error-message"
+                class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex justify-center items-center duration-200"
+                role="alert">
+                <strong class="font-bold">Error:</strong>
+                <span class="block sm:inline">{{ session('error') }}</span>
+            </div>
         </div>
-     </div>   
     @endif
 
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+            <div class="overflow-hidden sm:rounded-lg">
                 <!-- Contenedor con el Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 p-6">
-                    <!-- Tarjeta 1 -->
-                    <div class="bg-gray-100 p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold text-gray-800">1 Canción</h3>
-                        <p class="mt-4 text-gray-600">Almacena 1 canción en tu cuenta.</p>
-                        <p class="mt-4 text-lg font-semibold text-gray-800">$49</p>
-                        <div class="mt-6">
-                        <!-- AGREGARLE AL BOTON EL VALOR Y EL TITULO. FALTA LA DESCRIPCION -->
-                            <button onclick="openModal('Plan de 1 Canción', 49.00)" 
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200">Pagar</button>
-                        </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ">
+                    <!-- Tarjeta 1 img -->
+                    <div class="p-6 rounded-lg" onclick="openModal('Plan de 1 Canción', 49.00)">
+                        <img class="cursor-pointer" src="imagenes/plan1.png" alt="Plan 1">
                     </div>
 
-                    <!-- Tarjeta 2 -->
-                    <div class="bg-gray-100 p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold text-gray-800">5 Canciones</h3>
-                        <p class="mt-4 text-gray-600">Almacena hasta 5 canciones en tu cuenta.</p>
-                        <p class="mt-4 text-lg font-semibold text-gray-800">$219</p>
-                        <div class="mt-6">
-                            <button onclick="openModal('Plan de 5 Canciones', 219.00)"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200">Pagar</button>
-                        </div>
+                    <!-- Tarjeta 2 img -->
+                    <div class="p-6 rounded-lg" onclick="openModal('Plan de 5 Canciones', 219.00)">
+                        <img class="cursor-pointer" src="imagenes/plan5.png" alt="Plan 5">
                     </div>
 
-                    <!-- Tarjeta 3 -->
-                    <div class="bg-gray-100 p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold text-gray-800">10 Canciones</h3>
-                        <p class="mt-4 text-gray-600">Almacena hasta 10 canciones en tu cuenta.</p>
-                        <p class="mt-4 text-lg font-semibold text-gray-800">$399</p>
-                        <div class="mt-6">
-                            <button onclick="openModal('Plan de 10 Canciones', 399.00)"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200">Pagar</button>
-                        </div>
+                    <!-- Tarjeta 3 img -->
+                    <div class="p-6 rounded-lg" onclick="openModal('Plan de 10 Canciones', 399.00)">
+                        <img class="cursor-pointer" src="imagenes/plan10.png" alt="Plan 10">
                     </div>
 
-                    <!-- Tarjeta 4 -->
-                    <div class="bg-gray-100 p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold text-gray-800">20 Canciones</h3>
-                        <p class="mt-4 text-gray-600">Almacena hasta 20 canciones en tu cuenta.</p>
-                        <p class="mt-4 text-lg font-semibold text-gray-800">$699</p>
-                        <div class="mt-6">
-                            <button onclick="openModal('Plan de 20 Canciones', 699.00)"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200">Pagar</button>
-                        </div>
+                    <!-- Tarjeta 4 img -->
+                    <div class="p-6 rounded-lg" onclick="openModal('Plan de 20 Canciones', 699.00)">
+                        <img class="cursor-pointer" src="imagenes/plan20.png" alt="Plan 20">
                     </div>
 
-                    <!-- Tarjeta 5 -->
-                    <div class="bg-gray-100 p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold text-gray-800">50 Canciones</h3>
-                        <p class="mt-4 text-gray-600">Almacena hasta 50 canciones en tu cuenta.</p>
-                        <p class="mt-4 text-lg font-semibold text-gray-800">$1499</p>
-                        <div class="mt-6">
-                            <button onclick="openModal('Plan de 50 Canciones', 1499.00)"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200">Pagar</button>
-                        </div>
+                    <!-- Tarjeta 5 img -->
+                    <div class="p-6 rounded-lg" onclick="openModal('Plan de 50 Canciones', 1499.00)">
+                        <img class="cursor-pointer" src="imagenes/plan50.png" alt="Plan 50">
                     </div>
 
-                    <!-- Tarjeta 6 -->
-                    <div class="bg-gray-100 p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold text-gray-800">100 Canciones</h3>
-                        <p class="mt-4 text-gray-600">Almacena hasta 100 canciones en tu cuenta.</p>
-                        <p class="mt-4 text-lg font-semibold text-gray-800">$2499</p>
-                        <div class="mt-6">
-                            <button onclick="openModal('Plan de 100 Canciones', 2499.00)"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200">Pagar</button>
-                        </div>
+                    <!-- Tarjeta 6 img -->
+                    <div class="p-6 rounded-lg" onclick="openModal('Plan de 100 Canciones', 2499.00)">
+                        <img class="cursor-pointer" src="imagenes/plan100.png" alt="Plan 100">
                     </div>
+
                 </div>
             </div>
         </div>
@@ -172,7 +136,7 @@
                 const orderData = {
                     product: [{
                         title: window.selectedPlan.name,
-                        description: 'Descripción del producto', // Ajusta si es necesario
+                        description: 'Descripción del producto', // HAY QUE AGREGAR DESCRIPCION DEL PRODUCTO ! ! !
                         currency_id: "ARS",
                         quantity: 1,
                         unit_price: window.selectedPlan.price
@@ -181,7 +145,7 @@
 
                 console.log('Datos del pedido:', orderData);
 
-                // Hacer la solicitud a tu servidor para crear la preferencia
+                // SOLICITUD AL SEDVIDOR PARA CREAR UNA PREFERENCIA DE PAGO
                 fetch('/create-preference', {
                     method: 'POST',
                     headers: {
@@ -197,7 +161,7 @@
                         }
 
                         // Redirigir al usuario a la URL de pago
-                        window.location.href = preference.init_point; // Aquí rediriges usando el enlace correcto
+                        window.location.href = preference.init_point; 
                     })
                     .catch(error => console.error('Error al crear la preferencia:', error));
 
