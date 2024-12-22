@@ -86,10 +86,10 @@ class MercadoPagoController extends Controller
             "payer" => $payer, // Los datos del comprador
             "payment_methods" => $paymentMethods,
             "back_urls" => $backUrls,
-            "statement_descriptor" => "TIENDA ONLINE", // Puedes cambiar el texto que aparece en el estado de la tarjeta del comprador
-            "external_reference" => "1234567890", // Puedes usar algún identificador único aquí
+            "statement_descriptor" => "TIENDA ONLINE", 
+            "external_reference" => "1234567890", 
             "expires" => false,
-            "auto_return" => 'approved', // Redirige automáticamente después de una aprobación
+            "auto_return" => 'approved', 
         ];
 
         return $request;
@@ -107,7 +107,6 @@ class MercadoPagoController extends Controller
             return redirect('/dashboard')->with('success', 'Pago realizado con éxito. ID de pago: ' . $paymentId);
         }
 
-        // En caso de otro estado, también podrías manejarlo
         return redirect('/dashboard')->with('error', 'El pago no se completó. Por favor, inténtalo de nuevo.');
     }
 }

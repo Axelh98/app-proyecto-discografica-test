@@ -1,33 +1,17 @@
+@vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/mercadopago.js', 'resources/js/paypal.js'])
+
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+<script
+    src="https://www.paypal.com/sdk/js?client-id=AV_t2GwrkU3GNHT-2j3ecZ7NR_OuNSf6b95LTu4hYvnVbhj8bDwsisudEVzUMbwb61xK8m7dN2uIcBs2&buyer-country=US&currency=USD&components=buttons&enable-funding=venmo,paylater,card"
+    data-sdk-integration-source="developer-studio"></script>
+
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Dashboard') }}
         </h2>
-
     </x-slot>
-
-    <!-- MENSAJES DE ESTADO DE PAGO -->
-    @if (session('success'))
-        <div class="py-12">
-            <div id="success-message"
-                class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex justify-center items-center duration-300"
-                role="alert">
-                <strong class="font-bold">¡Éxito!</strong>
-                <span class="block sm:inline">{{ session('success') }}</span>
-            </div>
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="py-12">
-            <div id="error-message"
-                class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex justify-center items-center duration-200"
-                role="alert">
-                <strong class="font-bold">Error:</strong>
-                <span class="block sm:inline">{{ session('error') }}</span>
-            </div>
-        </div>
-    @endif
 
 
     <div class="py-12">
@@ -36,32 +20,32 @@
                 <!-- Contenedor con el Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ">
                     <!-- Tarjeta 1 img -->
-                    <div class="p-6 rounded-lg" onclick="openModal('Plan de 1 Canción', 49.00)">
+                    <div id="plan-1" class="p-6 rounded-lg" onclick="openModal('plan-1', 'Plan de 1 Canción', 49.00)">
                         <img class="cursor-pointer" src="imagenes/plan1.png" alt="Plan 1">
                     </div>
 
-                    <!-- Tarjeta 2 img -->
-                    <div class="p-6 rounded-lg" onclick="openModal('Plan de 5 Canciones', 219.00)">
+                    <div id="plan-5" class="p-6 rounded-lg"
+                        onclick="openModal('plan-5', 'Plan de 5 Canciones', 219.00)">
                         <img class="cursor-pointer" src="imagenes/plan5.png" alt="Plan 5">
                     </div>
 
-                    <!-- Tarjeta 3 img -->
-                    <div class="p-6 rounded-lg" onclick="openModal('Plan de 10 Canciones', 399.00)">
+                    <div id="plan-10" class="p-6 rounded-lg"
+                        onclick="openModal('plan-10', 'Plan de 10 Canciones', 399.00)">
                         <img class="cursor-pointer" src="imagenes/plan10.png" alt="Plan 10">
                     </div>
 
-                    <!-- Tarjeta 4 img -->
-                    <div class="p-6 rounded-lg" onclick="openModal('Plan de 20 Canciones', 699.00)">
+                    <div id="plan-20" class="p-6 rounded-lg"
+                        onclick="openModal('plan-20', 'Plan de 20 Canciones', 699.00)">
                         <img class="cursor-pointer" src="imagenes/plan20.png" alt="Plan 20">
                     </div>
 
-                    <!-- Tarjeta 5 img -->
-                    <div class="p-6 rounded-lg" onclick="openModal('Plan de 50 Canciones', 1499.00)">
+                    <div id="plan-50" class="p-6 rounded-lg"
+                        onclick="openModal('plan-50', 'Plan de 50 Canciones', 1499.00)">
                         <img class="cursor-pointer" src="imagenes/plan50.png" alt="Plan 50">
                     </div>
 
-                    <!-- Tarjeta 6 img -->
-                    <div class="p-6 rounded-lg" onclick="openModal('Plan de 100 Canciones', 2499.00)">
+                    <div id="plan-100" class="p-6 rounded-lg"
+                        onclick="openModal('plan-100', 'Plan de 100 Canciones', 2499.00)">
                         <img class="cursor-pointer" src="imagenes/plan100.png" alt="Plan 100">
                     </div>
 
@@ -92,11 +76,8 @@
                     <div class="bg-gray-100 p-6 rounded-lg shadow-lg">
                         <h4 class="text-lg font-semibold text-gray-800">PayPal</h4>
                         <p class="mt-4 text-gray-600">Paga con tu cuenta de PayPal.</p>
-                        <div class="mt-6">
-                            <button
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200">Seleccionar
-                                PayPal</button>
-                        </div>
+                        <div id="paypal-button-container" class="mt-4"></div>
+                        <p id="result-message"></p>
                     </div>
                 </div>
 
@@ -106,67 +87,6 @@
                 </div>
             </div>
         </div>
-
-        <script src="https://sdk.mercadopago.com/js/v2"></script>
-        <script>
-
-            function openModal(planName, planPrice) {
-                // Establecer los valores del plan al hacer clic en "Pagar"
-                window.selectedPlan = {
-                    name: planName,
-                    price: planPrice
-                };
-
-                // Mostrar el modal
-                document.getElementById('paymentModal').classList.remove('hidden');
-            }
-
-            function closeModal() {
-                // Ocultar el modal
-                document.getElementById('paymentModal').classList.add('hidden');
-            }
-
-            // Inicializar Mercado Pago
-            const mp = new MercadoPago("APP_USR-fb222e12-9761-40c4-98ff-5a119ce3ed95");
-
-            //console.log("{{ env('MERCADO_PAGO_PUBLIC_KEY') }}");
-
-            document.getElementById('checkout-btn').addEventListener('click', function () {
-                // Crear el objeto 'orderData' solo con el plan seleccionado
-                const orderData = {
-                    product: [{
-                        title: window.selectedPlan.name,
-                        description: 'Descripción del producto', // HAY QUE AGREGAR DESCRIPCION DEL PRODUCTO ! ! !
-                        currency_id: "ARS",
-                        quantity: 1,
-                        unit_price: window.selectedPlan.price
-                    }]
-                };
-
-                console.log('Datos del pedido:', orderData);
-
-                // SOLICITUD AL SEDVIDOR PARA CREAR UNA PREFERENCIA DE PAGO
-                fetch('/create-preference', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                    },
-                    body: JSON.stringify(orderData)
-                })
-                    .then(response => response.json())
-                    .then(preference => {
-                        if (preference.error) {
-                            throw new Error(preference.error);
-                        }
-
-                        // Redirigir al usuario a la URL de pago
-                        window.location.href = preference.init_point; 
-                    })
-                    .catch(error => console.error('Error al crear la preferencia:', error));
-
-            });
-        </script>
     </div>
 
 
