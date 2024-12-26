@@ -6,22 +6,20 @@ use Illuminate\Http\Request;
 use PaypalServerSdkLib\Authentication\ClientCredentialsAuthCredentialsBuilder;
 use PaypalServerSdkLib\Environment;
 use PaypalServerSdkLib\PaypalServerSDKClientBuilder;
-use PaypalServerSdkLib\Models\Builders\AmountWithBreakdownBuilder;
 use PaypalServerSdkLib\Models\Builders\OrderRequestBuilder;
 use PaypalServerSdkLib\Models\Builders\PurchaseUnitRequestBuilder;
-use Exception;
-use Illuminate\Support\Facades\Log;
+use PaypalServerSdkLib\Models\Builders\AmountWithBreakdownBuilder;
 
 class PaypalController extends Controller
 {
-    private $client;
+    protected $client;
 
     public function __construct()
     {
         $PAYPAL_CLIENT_ID = env('PAYPAL_CLIENT_ID');
         $PAYPAL_CLIENT_SECRET = env('PAYPAL_CLIENT_SECRET');
 
-        $this->client = PaypalServerSdkClientBuilder::init()
+        $this->client = PaypalServerSDKClientBuilder::init()
             ->clientCredentialsAuthCredentials(
                 ClientCredentialsAuthCredentialsBuilder::init(
                     $PAYPAL_CLIENT_ID,
@@ -32,61 +30,88 @@ class PaypalController extends Controller
             ->build();
     }
 
+    /**
+     * Crear una orden de pago en PayPal.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function createOrder(Request $request)
     {
-        Log::info('Creando orden de pago con PayPal');
+        $data = $request->input('cart');  // Suponemos que recibimos el carrito con la información del producto
 
-        // Paso 1: Obtener la información del producto desde la solicitud JSON
-        $product = $request->input('cart')[0]; // Tomar el primer elemento del carrito
+        $purchaseUnits = [];
 
-        if (empty($product) || !is_array($product)) {
-            return response()->json(['error' => 'Los datos del producto son requeridos.'], 400);
+        foreach ($data as $item) {
+            $purchaseUnits[] = PurchaseUnitRequestBuilder::init(
+                AmountWithBreakdownBuilder::init("USD", $item['price'] * $item['quantity'])
+                    ->build()
+            )->build();
         }
-        
-        $orderRequest = OrderRequestBuilder::init("CAPTURE", [
-            PurchaseUnitRequestBuilder::init(
-                AmountWithBreakdownBuilder::init($product['currency'], $product['amount'])->build()
-            )->build(),
-        ])->build();
+
+        $orderBody = [
+            "intent" => "CAPTURE", // Aseguramos que el 'intent' sea 'CAPTURE' para poder capturar el pago.
+            "purchase_units" => $purchaseUnits
+        ];
 
         try {
-            $apiResponse = $this->client->getOrdersController()->ordersCreate(['body' => $orderRequest]);
+            // Realizamos la llamada a la API de PayPal para crear la orden
+            $apiResponse = $this->client->getOrdersController()->ordersCreate($orderBody);
 
-            $orderData = json_decode($apiResponse->getBody(), true);
+            // Procesamos la respuesta de PayPal
+            $jsonResponse = json_decode($apiResponse->getBody(), true);
 
+            // Si la respuesta contiene el 'id' de la orden, lo regresamos al cliente
             return response()->json([
-                'id' => $orderData['id'],
-                'status' => $orderData['status'],
-                'links' => $orderData['links'],
+                'orderID' => $jsonResponse['id'],
+                'status' => $jsonResponse['status']
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
+            // Mejor manejo de errores con más detalles
             return response()->json([
                 'error' => $e->getMessage(),
+                'errorDetails' => $e->getTraceAsString()
             ], 500);
         }
     }
 
-    public function captureOrder(Request $request)
+    /**
+     * Capturar el pago de una orden de PayPal.
+     *
+     * @param string $orderId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function capturePayment($orderId)
     {
-        Log::info('Capturando pago con PayPal');
-        $orderID = $request->input('order_id'); // ID de la orden creada previamente
+        header("Access-Control-Allow-Origin: *");
+        header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+        header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-        if (empty($orderID)) {
-            return response()->json(['error' => 'El ID de la orden es requerido.'], 400);
-        }
+        // Preparamos el cuerpo de la solicitud de captura con el ID de la orden
+        $captureBody = [
+            "payer_id" => request()->input('payer_id'), // El payer_id se debe pasar desde el frontend
+        ];
 
         try {
-            $captureResponse = $this->client->getOrdersController()->ordersCapture(['id' => $orderID]);
-
-            $captureData = json_decode($captureResponse->getBody(), true);
-
-            return response()->json([
-                'status' => $captureData['status'],
-                'purchase_units' => $captureData['purchase_units'],
+            // Realizamos la llamada a la API de PayPal para capturar el pago
+            $apiResponse = $this->client->getOrdersController()->ordersCapture([
+                'orderId' => $orderId, // El ID de la orden
+                'captureBody' => $captureBody // El cuerpo de la solicitud para captura
             ]);
-        } catch (Exception $e) {
+            
+            // Procesamos la respuesta de PayPal
+            $jsonResponse = json_decode($apiResponse->getBody(), true);
+
+            // Retornamos el resultado al cliente
+            return response()->json([
+                'status' => $jsonResponse['status'],
+                'details' => $jsonResponse
+            ]);
+        } catch (\Exception $e) {
+            // Mejor manejo de errores con más detalles
             return response()->json([
                 'error' => $e->getMessage(),
+                'errorDetails' => $e->getTraceAsString()
             ], 500);
         }
     }

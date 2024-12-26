@@ -25,6 +25,10 @@ window.openModal = function (planId, planName, planPrice) {
     } else {
         console.error('No se encontró el elemento con ID "paymentModal".');
     }
+    console.log('Plan seleccionado:', window.selectedPlan);
+    console.log('plan id:', planId);
+    console.log('plan name:', planName);
+    console.log('plan price:', planPrice);
 };
 
 

@@ -1,5 +1,3 @@
-
-// Configuración de PayPal
 window.paypal
     .Buttons({
         style: {
@@ -9,88 +7,37 @@ window.paypal
             label: "paypal",
         },
 
-        // Crear orden utilizando los datos del producto seleccionado
-        async createOrder() {
-            if (!window.selectedPlan) {
-                console.error("No se seleccionó ningún plan.");
-                throw new Error("Debe seleccionar un plan antes de proceder.");
-            }
-
-            try {
-                const response = await fetch("/create-order", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]')?.value,
+        createOrder: function (data, actions) {
+            return actions.order.create({
+                purchase_units: [
+                    {
+                        amount: {
+                            value: window.selectedPlan.price,
+                        },
                     },
-                    body: JSON.stringify({
-                        cart: [
-                            {
-                                id: window.selectedPlan.id, // Usar el ID único del producto (e.g., plan-1)
-                                name: window.selectedPlan.name, // Nombre del plan
-                                amount: window.selectedPlan.price, // Precio del plan
-                                currency: "ARS",
-                            },
-                        ],
-                    }),
-                });
-
-                const orderData = await response.json();
-                console.log(orderData);
-                console.log(orderData.id);
-
-                if (orderData.id) {
-                    return orderData.id; // Devuelve el ID de la orden para PayPal
-                }
-
-                const errorDetail = orderData?.details?.[0];
-                const errorMessage = errorDetail
-                    ? `${errorDetail.issue} ${errorDetail.description} (${orderData.debug_id})`
-                    : JSON.stringify(orderData);
-
-                throw new Error(errorMessage);
-            } catch (error) {
-                console.error(error);
-            }
+                ],
+                description: window.selectedPlan.name,
+            });
         },
-
-        // Procesar el pago
-        async onApprove(data, actions) {
-            try {
-                const response = await fetch(`/capture-order`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
-
-                const orderData = await response.json();
-
-                const errorDetail = orderData?.details?.[0];
-
-                if (errorDetail?.issue === "INSTRUMENT_DECLINED") {
-                    return actions.restart();
-                } else if (errorDetail) {
-                    throw new Error(
-                        `${errorDetail.description} (${orderData.debug_id})`
-                    );
+        onApprove: function(data, actions) {
+            // El payerID viene de la respuesta de PayPal después de la aprobación
+            const payerId = data.payerID;
+        
+            // Enviar el payerId junto con el orderID al backend para completar la captura
+            axios.post("/api/orders/" + data.orderID + "/capture", {
+                payer_id: payerId  // Pasamos el payer_id al backend
+            })
+            .then(response => {
+                if (response.data.status === 'success') {
+                    alert("Pago completado con éxito.");
                 } else {
-                    const transaction =
-                        orderData?.purchase_units?.[0]?.payments?.captures?.[0] ||
-                        orderData?.purchase_units?.[0]?.payments?.authorizations?.[0];
-                    console.log(
-                        `Transaction ${transaction.status}: ${transaction.id}`
-                    );
-                    alert(`Transaction successful: ${transaction.id}`);
+                    alert("Error al procesar el pago.");
                 }
-            } catch (error) {
-                console.error(error);
-                alert(
-                    `Sorry, your transaction could not be processed. Error: ${error}`
-                );
-            }
+            })
+            .catch(error => {
+                alert("Ocurrió un error. Inténtalo de nuevo: " + error);
+            });
         },
+        
     })
     .render("#paypal-button-container");
-
-console.log("PayPal script loaded");
